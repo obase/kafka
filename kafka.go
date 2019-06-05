@@ -4,6 +4,11 @@ import (
 	"github.com/Shopify/sarama"
 )
 
+type ProducerMessage = sarama.ProducerMessage
+type ProducerError = sarama.ProducerError
+type ConsumerMessage = sarama.ConsumerMessage
+type ConsumerError = sarama.ConsumerError
+
 type ProducerOption struct {
 	Key                string   `json:"key"`
 	Address            []string `json:"address"` // kafka地址
@@ -16,26 +21,27 @@ type ConsumerOption struct {
 	Key     string   `json:"key"`
 	Address []string `json:"address"` // kafka地址
 	Group   string   `json:"group"`   // groupId
+	Offset  int64
 }
 
-type ProducerMessageHandler func(msg *sarama.ProducerMessage)
+type ProducerMessageHandler func(msg *ProducerMessage)
 
-type ProducerErrorHandler func(err *sarama.ProducerError)
+type ProducerErrorHandler func(err *ProducerError)
 
 type Producer interface {
 	Close() error
-	Produce(msgs ...*sarama.ProducerMessage) error
+	Produce(msgs ...*ProducerMessage) error
 	AsyncHandle(mh ProducerMessageHandler, eh ProducerErrorHandler) // 必须设置 asyncReturnSuccess 或 asyncReturnError
 }
 
-type ConsumerMessageHandler func(msg *sarama.ConsumerMessage)
+type ConsumerMessageHandler func(msg *ConsumerMessage)
 
-type ConsumerErrorHandler func(err *sarama.ConsumerError)
+type ConsumerErrorHandler func(err error)
 
 type Consumer interface {
 	Close() error
 	// blocking to consume the messages
-	Consume(topics []string, mh ConsumerMessageHandler, eh ConsumerErrorHandler) error
+	Consume(topics string, mh ConsumerMessageHandler, eh ConsumerErrorHandler) error
 }
 
 func producerConfig(opt *ProducerOption) (config *sarama.Config) {
