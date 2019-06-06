@@ -23,12 +23,19 @@ func (g *saramaConsumer) Consume(topic string, mh ConsumerMessageHandler, eh Con
 	if err != nil {
 		return
 	}
+	var pcs []sarama.PartitionConsumer
+	defer func() {
+		for _, pc := range pcs {
+			pc.Close()
+		}
+	}()
 	var pc sarama.PartitionConsumer
 	for _, part := range parts {
 		pc, err = g.ConsumePartition(topic, part, g.option.Offset)
 		if err != nil {
 			return
 		}
+		pcs = append(pcs, pc)
 		ver := atomic.AddInt32(&g.version, 1)
 		// 错误处理
 		go func() {

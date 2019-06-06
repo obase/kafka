@@ -7,11 +7,25 @@ import (
 	"time"
 )
 
-func (h ConsumerMessageHandler) Setup(s sarama.ConsumerGroupSession) error   { return nil }
-func (h ConsumerMessageHandler) Cleanup(s sarama.ConsumerGroupSession) error { return nil }
-func (h ConsumerMessageHandler) ConsumeClaim(s sarama.ConsumerGroupSession, c sarama.ConsumerGroupClaim) error {
+type saramaConsumerGroupHandler struct {
+	Offset int64
+	Hander ConsumerMessageHandler
+}
+
+func newSaramaConsumerGroupHandler(mhandler ConsumerMessageHandler, offset int64) *saramaConsumerGroupHandler {
+	return &saramaConsumerGroupHandler{
+		Hander: mhandler,
+		Offset: offset,
+	}
+}
+func (h *saramaConsumerGroupHandler) Setup(s sarama.ConsumerGroupSession) error   { return nil }
+func (h *saramaConsumerGroupHandler) Cleanup(s sarama.ConsumerGroupSession) error { return nil }
+func (h *saramaConsumerGroupHandler) ConsumeClaim(s sarama.ConsumerGroupSession, c sarama.ConsumerGroupClaim) error {
+	if h.Offset != 0 {
+		s.ResetOffset(c.Topic(), c.Partition(), h.Offset, "")
+	}
 	for msg := range c.Messages() {
-		h(msg)
+		h.Hander(msg)
 		s.MarkMessage(msg, "")
 	}
 	return nil
@@ -40,14 +54,12 @@ func (g *saramaConsumerGroup) Consume(topic string, mh ConsumerMessageHandler, e
 			}
 		}
 	}()
-	ctx := context.Background()
 	for {
-		err = g.ConsumerGroup.Consume(ctx, []string{topic}, mh)
+		err = g.ConsumerGroup.Consume(context.Background(), []string{topic}, newSaramaConsumerGroupHandler(mh, g.option.Offset))
 		if err != nil {
 			return
 		}
 	}
-
 	return nil
 }
 
