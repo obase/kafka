@@ -15,11 +15,11 @@ type saramaSyncProducer struct {
 }
 
 func (p *saramaSyncProducer) Close() error {
-	return p.Close()
+	return p.SyncProducer.Close()
 }
 
 func (p *saramaSyncProducer) Produce(msgs ...*sarama.ProducerMessage) error {
-	return p.SendMessages(msgs)
+	return p.SyncProducer.SendMessages(msgs)
 }
 
 func (p *saramaSyncProducer) AsyncHandle(mh ProducerMessageHandler, eh ProducerErrorHandler) {
@@ -27,7 +27,8 @@ func (p *saramaSyncProducer) AsyncHandle(mh ProducerMessageHandler, eh ProducerE
 }
 
 func newSaramaSyncProducer(opt *ProducerOption) (ret *saramaSyncProducer, err error) {
-	// must be set true to return.errors
+	// must be set true
+	opt.ReturnSuccess = true
 	opt.ReturnError = true
 	p, err := sarama.NewSyncProducer(opt.Address, producerConfig(opt))
 	if err != nil {
@@ -50,12 +51,12 @@ type saramaAsyncProducer struct {
 }
 
 func (p *saramaAsyncProducer) Close() error {
-	return p.Close()
+	return p.AsyncProducer.Close()
 }
 
 func (p *saramaAsyncProducer) Produce(msgs ...*sarama.ProducerMessage) error {
 	for _, m := range msgs {
-		p.Input() <- m
+		p.AsyncProducer.Input() <- m
 	}
 	return nil
 }

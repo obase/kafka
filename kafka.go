@@ -46,6 +46,7 @@ type Consumer interface {
 
 func producerConfig(opt *ProducerOption) (config *sarama.Config) {
 	config = sarama.NewConfig()
+	config.Version = sarama.V0_10_2_0 // consumer groups require Version to be >= V0_10_2_0
 	config.Producer.Return.Successes = opt.ReturnSuccess
 	config.Producer.Return.Errors = opt.ReturnError
 	return
@@ -53,6 +54,7 @@ func producerConfig(opt *ProducerOption) (config *sarama.Config) {
 
 func consumerConfig(opt *ConsumerOption) (config *sarama.Config) {
 	config = sarama.NewConfig()
+	config.Version = sarama.V0_10_2_0 // consumer groups require Version to be >= V0_10_2_0
 	return
 }
 
@@ -83,14 +85,19 @@ func SetupProducer(opt *ProducerOption) (err error) {
 
 func SetupConsumer(opt *ConsumerOption) (err error) {
 	var c Consumer
-	if opt.Group != "" {
-		c, err = newSaramaConsumerGroup(opt)
-	} else {
-		c, err = newSaramaConsumer(opt)
-	}
+	c, err = newSaramaConsumerGroup(opt)
 	if err != nil {
 		return
 	}
 	consumers[opt.Key] = c
 	return
+}
+
+func Close() {
+	for _, p := range producers {
+		p.Close()
+	}
+	for _, c := range consumers {
+		c.Close()
+	}
 }

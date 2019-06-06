@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	"fmt"
 	"github.com/obase/conf"
 	"strconv"
 	"sync"
@@ -19,6 +20,7 @@ func Init() {
 			for i, c := range configs {
 				key, ok := conf.ElemString(c, "key")
 				if !ok {
+					Close()
 					panic("Undef kafka producder key of " + strconv.Itoa(i))
 				}
 				address, ok := conf.ElemStringSlice(c, "address")
@@ -34,7 +36,8 @@ func Init() {
 					ReturnError:   returnError,
 				})
 				if err != nil {
-					panic("Setup kafka producer error: " + key)
+					Close()
+					panic(fmt.Sprintf("Setup kafka consumer failed, key=%v, err=%v ", key, err))
 				}
 			}
 		}
@@ -43,10 +46,15 @@ func Init() {
 			for i, c := range configs {
 				key, ok := conf.ElemString(c, "key")
 				if !ok {
+					Close()
 					panic("Undef kafka consumer key " + strconv.Itoa(i))
 				}
 				address, ok := conf.ElemStringSlice(c, "address")
 				group, ok := conf.ElemString(c, "group")
+				if !ok {
+					Close()
+					panic("Undef kafka consumer group " + strconv.Itoa(i))
+				}
 				offset, ok := conf.ElemInt(c, "offset")
 
 				err := SetupConsumer(&ConsumerOption{
@@ -56,7 +64,8 @@ func Init() {
 					Offset:  int64(offset),
 				})
 				if err != nil {
-					panic("Setup kafka consumer error: " + key)
+					Close()
+					panic(fmt.Sprintf("Setup kafka consumer failed, key=%v, err=%v ", key, err))
 				}
 			}
 		}

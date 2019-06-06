@@ -18,12 +18,18 @@ func newSaramaConsumerGroupHandler(mhandler ConsumerMessageHandler, offset int64
 		Offset: offset,
 	}
 }
-func (h *saramaConsumerGroupHandler) Setup(s sarama.ConsumerGroupSession) error   { return nil }
+func (h *saramaConsumerGroupHandler) Setup(s sarama.ConsumerGroupSession) error {
+	if h.Offset != 0 {
+		for t, ps := range s.Claims() {
+			for _, p := range ps {
+				s.ResetOffset(t, p, h.Offset, "")
+			}
+		}
+	}
+	return nil
+}
 func (h *saramaConsumerGroupHandler) Cleanup(s sarama.ConsumerGroupSession) error { return nil }
 func (h *saramaConsumerGroupHandler) ConsumeClaim(s sarama.ConsumerGroupSession, c sarama.ConsumerGroupClaim) error {
-	if h.Offset != 0 {
-		s.ResetOffset(c.Topic(), c.Partition(), h.Offset, "")
-	}
 	for msg := range c.Messages() {
 		h.Hander(msg)
 		s.MarkMessage(msg, "")
@@ -38,7 +44,7 @@ type saramaConsumerGroup struct {
 }
 
 func (g *saramaConsumerGroup) Close() error {
-	return g.Close()
+	return g.ConsumerGroup.Close()
 }
 
 // blocking to consume the messages
