@@ -23,15 +23,15 @@ func Init() {
 				}
 				address, ok := conf.ElemStringSlice(c, "address")
 				async, ok := conf.ElemBool(c, "async")
-				asyncReturnSuccess, ok := conf.ElemBool(c, "asyncReturnSuccess")
-				asyncReturnError, ok := conf.ElemBool(c, "asyncReturnError")
+				returnSuccess, ok := conf.ElemBool(c, "returnSuccess")
+				returnError, ok := conf.ElemBool(c, "returnError")
 
 				err := SetupProducer(&ProducerOption{
-					Key:                key,
-					Address:            address,
-					Async:              async,
-					AsyncReturnSuccess: asyncReturnSuccess,
-					AsyncReturnError:   asyncReturnError,
+					Key:           key,
+					Address:       address,
+					Async:         async,
+					ReturnSuccess: returnSuccess,
+					ReturnError:   returnError,
 				})
 				if err != nil {
 					panic("Setup kafka producer error: " + key)

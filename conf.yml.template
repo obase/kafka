@@ -1,0 +1,14 @@
+kafkaProducer:
+  -
+    key: "demo"
+    address: "10.11.165.44:9092,10.11.165.44:19092,10.11.165.44:29092"
+    async: false
+    returnSuccess: false
+    returnError: false
+
+kafkaConsumer:
+  -
+    key: "demo"
+    address: "10.11.165.44:9092,10.11.165.44:19092,10.11.165.44:29092"
+    group: "demo"
+    offset: 0

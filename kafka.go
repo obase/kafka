@@ -10,18 +10,18 @@ type ConsumerMessage = sarama.ConsumerMessage
 type ConsumerError = sarama.ConsumerError
 
 type ProducerOption struct {
-	Key                string   `json:"key"`
-	Address            []string `json:"address"` // kafka地址
-	Async              bool     `json:"async"`
-	AsyncReturnSuccess bool     `json:"asyncReturnSuccess"`
-	AsyncReturnError   bool     `json:"asyncReturnError"`
+	Key           string   `json:"key"`
+	Address       []string `json:"address"` // kafka地址
+	Async         bool     `json:"async"`
+	ReturnSuccess bool     `json:"returnSuccess"`
+	ReturnError   bool     `json:"returnError"`
 }
 
 type ConsumerOption struct {
 	Key     string   `json:"key"`
 	Address []string `json:"address"` // kafka地址
 	Group   string   `json:"group"`   // groupId
-	Offset  int64
+	Offset  int64    `json:"offset"`
 }
 
 type ProducerMessageHandler func(msg *ProducerMessage)
@@ -46,8 +46,8 @@ type Consumer interface {
 
 func producerConfig(opt *ProducerOption) (config *sarama.Config) {
 	config = sarama.NewConfig()
-	config.Producer.Return.Successes = opt.AsyncReturnSuccess
-	config.Producer.Return.Errors = opt.AsyncReturnError
+	config.Producer.Return.Successes = opt.ReturnSuccess
+	config.Producer.Return.Errors = opt.ReturnError
 	return
 }
 

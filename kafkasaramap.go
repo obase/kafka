@@ -27,6 +27,8 @@ func (p *saramaSyncProducer) AsyncHandle(mh ProducerMessageHandler, eh ProducerE
 }
 
 func newSaramaSyncProducer(opt *ProducerOption) (ret *saramaSyncProducer, err error) {
+	// must be set true to return.errors
+	opt.ReturnError = true
 	p, err := sarama.NewSyncProducer(opt.Address, producerConfig(opt))
 	if err != nil {
 		return
@@ -60,7 +62,7 @@ func (p *saramaAsyncProducer) Produce(msgs ...*sarama.ProducerMessage) error {
 
 func (p *saramaAsyncProducer) AsyncHandle(mh ProducerMessageHandler, eh ProducerErrorHandler) {
 	ver := atomic.AddInt32(&p.version, 1)
-	if p.option.AsyncReturnSuccess && mh != nil {
+	if p.option.ReturnSuccess && mh != nil {
 		go func() {
 			tk := time.Tick(time.Second)
 			for p.version == ver {
@@ -73,7 +75,7 @@ func (p *saramaAsyncProducer) AsyncHandle(mh ProducerMessageHandler, eh Producer
 			}
 		}()
 	}
-	if p.option.AsyncReturnError && eh != nil {
+	if p.option.ReturnError && eh != nil {
 		go func() {
 			tk := time.Tick(time.Second)
 			for p.version == ver {
@@ -97,7 +99,7 @@ func newSaramaAsyncProducer(opt *ProducerOption) (ret *saramaAsyncProducer, err 
 		AsyncProducer: p,
 	}
 	// 默认异步读取,避免阻塞
-	if opt.AsyncReturnSuccess {
+	if opt.ReturnSuccess {
 		go func() {
 			tk := time.Tick(time.Second)
 			for ret.version == 0 {
@@ -109,7 +111,7 @@ func newSaramaAsyncProducer(opt *ProducerOption) (ret *saramaAsyncProducer, err 
 		}()
 	}
 	// 默认异步读取,避免阻塞
-	if opt.AsyncReturnError {
+	if opt.ReturnError {
 		go func() {
 			tk := time.Tick(time.Second)
 			for ret.version == 0 {
