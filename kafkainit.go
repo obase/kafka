@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"github.com/obase/conf"
+	"strconv"
 	"sync"
 )
 
@@ -13,27 +14,51 @@ var once sync.Once
 func Init() {
 	once.Do(func() {
 		conf.Init()
-		configs, ok := conf.GetSlice(CKEY)
-		if !ok || len(configs) == 0 {
-			return
+		configs, ok := conf.GetSlice(PCKEY)
+		if ok && len(configs) > 0 {
+			for i, c := range configs {
+				key, ok := conf.ElemString(c, "key")
+				if !ok {
+					panic("Undef kafka producder key of " + strconv.Itoa(i))
+				}
+				address, ok := conf.ElemStringSlice(c, "address")
+				async, ok := conf.ElemBool(c, "async")
+				asyncReturnSuccess, ok := conf.ElemBool(c, "asyncReturnSuccess")
+				asyncReturnError, ok := conf.ElemBool(c, "asyncReturnError")
+
+				err := SetupProducer(&ProducerOption{
+					Key:                key,
+					Address:            address,
+					Async:              async,
+					AsyncReturnSuccess: asyncReturnSuccess,
+					AsyncReturnError:   asyncReturnError,
+				})
+				if err != nil {
+					panic("Setup kafka producer error: " + key)
+				}
+			}
 		}
-		//for _, config := range configs {
-		//	if key, ok := conf.ElemString(config, "key"); ok {
-		//
-		//		address, ok := conf.ElemStringSlice(config, "address")
-		//		groupId, ok := conf.ElemString("groupId", "") // 可选
-		//
-		//
-		//		//////////////////////////////
-		//
-		//		database, ok := conf.ElemString(config, "database")
-		//		username, ok := conf.ElemString(config, "username")
-		//		password, ok := conf.ElemString(config, "password")
-		//		source, ok := conf.ElemString(config, "source")
-		//		safe, ok := conf.ElemMap(config, "safe")
-		//		mode, ok := conf.Elem(config, "mode")
-		//
-		//	}
-		//}
+		configs, ok = conf.GetSlice(CCKEY)
+		if ok && len(configs) > 0 {
+			for i, c := range configs {
+				key, ok := conf.ElemString(c, "key")
+				if !ok {
+					panic("Undef kafka consumer key " + strconv.Itoa(i))
+				}
+				address, ok := conf.ElemStringSlice(c, "address")
+				group, ok := conf.ElemString(c, "group")
+				offset, ok := conf.ElemInt(c, "offset")
+
+				err := SetupConsumer(&ConsumerOption{
+					Key:     key,
+					Address: address,
+					Group:   group,
+					Offset:  int64(offset),
+				})
+				if err != nil {
+					panic("Setup kafka consumer error: " + key)
+				}
+			}
+		}
 	})
 }

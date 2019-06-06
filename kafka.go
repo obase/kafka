@@ -55,3 +55,42 @@ func consumerConfig(opt *ConsumerOption) (config *sarama.Config) {
 	config = sarama.NewConfig()
 	return
 }
+
+var producers map[string]Producer = make(map[string]Producer)
+var consumers map[string]Consumer = make(map[string]Consumer)
+
+func GetProducer(key string) Producer {
+	return producers[key]
+}
+
+func GetConsumer(key string) Consumer {
+	return consumers[key]
+}
+
+func SetupProducer(opt *ProducerOption) (err error) {
+	var p Producer
+	if opt.Async {
+		p, err = newSaramaAsyncProducer(opt)
+	} else {
+		p, err = newSaramaSyncProducer(opt)
+	}
+	if err != nil {
+		return
+	}
+	producers[opt.Key] = p
+	return
+}
+
+func SetupConsumer(opt *ConsumerOption) (err error) {
+	var c Consumer
+	if opt.Group != "" {
+		c, err = newSaramaConsumerGroup(opt)
+	} else {
+		c, err = newSaramaConsumer(opt)
+	}
+	if err != nil {
+		return
+	}
+	consumers[opt.Key] = c
+	return
+}

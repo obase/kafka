@@ -22,12 +22,8 @@ func (p *saramaSyncProducer) Produce(msgs ...*sarama.ProducerMessage) error {
 	return p.SendMessages(msgs)
 }
 
-func (p *saramaSyncProducer) AsyncSuccessHandler(h ProducerMessageHandler) {
-	// nothing
-}
+func (p *saramaSyncProducer) AsyncHandle(mh ProducerMessageHandler, eh ProducerErrorHandler) {
 
-func (p *saramaSyncProducer) AsyncErrorHandler(h ProducerErrorHandler) {
-	// nothing
 }
 
 func newSaramaSyncProducer(opt *ProducerOption) (ret *saramaSyncProducer, err error) {
