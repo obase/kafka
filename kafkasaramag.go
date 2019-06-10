@@ -3,38 +3,51 @@ package kafka
 import (
 	"context"
 	"github.com/Shopify/sarama"
+	"strconv"
 	"sync/atomic"
 	"time"
 )
 
 type saramaConsumerGroupHandler struct {
-	Offset int64
+	Option *ConsumerOption
 	Hander ConsumerMessageHandler
 }
 
-func newSaramaConsumerGroupHandler(mhandler ConsumerMessageHandler, offset int64) *saramaConsumerGroupHandler {
+func newSaramaConsumerGroupHandler(mhandler ConsumerMessageHandler, option *ConsumerOption) *saramaConsumerGroupHandler {
 	return &saramaConsumerGroupHandler{
 		Hander: mhandler,
-		Offset: offset,
+		Option: option,
 	}
 }
 func (h *saramaConsumerGroupHandler) Setup(s sarama.ConsumerGroupSession) error {
-	if h.Offset != 0 {
+	if h.Option.Offset != 0 {
 		for t, ps := range s.Claims() {
 			for _, p := range ps {
-				s.ResetOffset(t, p, h.Offset, "")
+				s.ResetOffset(t, p, h.Option.Offset, "")
 			}
 		}
 	}
 	return nil
 }
 func (h *saramaConsumerGroupHandler) Cleanup(s sarama.ConsumerGroupSession) error { return nil }
-func (h *saramaConsumerGroupHandler) ConsumeClaim(s sarama.ConsumerGroupSession, c sarama.ConsumerGroupClaim) error {
+func (h *saramaConsumerGroupHandler) ConsumeClaim(s sarama.ConsumerGroupSession, c sarama.ConsumerGroupClaim) (err error) {
 	for msg := range c.Messages() {
-		h.Hander(msg)
-		s.MarkMessage(msg, "")
+		if h.Option.Ack == ACK_BEFORE_AUTO {
+			s.MarkMessage(msg, "")
+		}
+		err = h.Hander(msg)
+		switch h.Option.Ack {
+		case ACK_AFTER_NOERROR:
+			if err == nil {
+				s.MarkMessage(msg, "")
+			}
+		case ACK_AFTER_NOMATTER:
+			s.MarkMessage(msg, "")
+		default:
+			panic("invalid ack type: " + strconv.Itoa(h.Option.Ack))
+		}
 	}
-	return nil
+	return
 }
 
 type saramaConsumerGroup struct {

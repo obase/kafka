@@ -4,6 +4,12 @@ import (
 	"github.com/Shopify/sarama"
 )
 
+const (
+	ACK_BEFORE_AUTO    = 0
+	ACK_AFTER_NOERROR  = 1
+	ACK_AFTER_NOMATTER = 2
+)
+
 type ProducerMessage = sarama.ProducerMessage
 type ProducerError = sarama.ProducerError
 type ConsumerMessage = sarama.ConsumerMessage
@@ -22,6 +28,7 @@ type ConsumerOption struct {
 	Address []string `json:"address"` // kafka地址
 	Group   string   `json:"group"`   // groupId
 	Offset  int64    `json:"offset"`
+	Ack     int      `json:"ack"` // ack类型
 }
 
 type ProducerMessageHandler func(msg *ProducerMessage)
@@ -34,7 +41,7 @@ type Producer interface {
 	AsyncHandle(mh ProducerMessageHandler, eh ProducerErrorHandler) // 必须设置 asyncReturnSuccess 或 asyncReturnError
 }
 
-type ConsumerMessageHandler func(msg *ConsumerMessage)
+type ConsumerMessageHandler func(msg *ConsumerMessage) error
 
 type ConsumerErrorHandler func(err error)
 

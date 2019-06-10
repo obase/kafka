@@ -56,12 +56,14 @@ func Init() {
 					panic("Undef kafka consumer group " + strconv.Itoa(i))
 				}
 				offset, ok := conf.ElemInt(c, "offset")
+				ack, ok := conf.ElemInt(c, "ack")
 
 				err := SetupConsumer(&ConsumerOption{
 					Key:     key,
 					Address: address,
 					Group:   group,
 					Offset:  int64(offset),
+					Ack:     ack,
 				})
 				if err != nil {
 					Close()
