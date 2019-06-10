@@ -32,16 +32,16 @@ func (h *saramaConsumerGroupHandler) Setup(s sarama.ConsumerGroupSession) error 
 func (h *saramaConsumerGroupHandler) Cleanup(s sarama.ConsumerGroupSession) error { return nil }
 func (h *saramaConsumerGroupHandler) ConsumeClaim(s sarama.ConsumerGroupSession, c sarama.ConsumerGroupClaim) (err error) {
 	for msg := range c.Messages() {
-		if h.Option.Ack == ACK_BEFORE_AUTO {
-			s.MarkMessage(msg, "")
-		}
-		err = h.Hander(msg)
 		switch h.Option.Ack {
+		case ACK_BEFORE_AUTO:
+			s.MarkMessage(msg, "")
+			err = h.Hander(msg)
 		case ACK_AFTER_NOERROR:
-			if err == nil {
+			if err = h.Hander(msg); err == nil {
 				s.MarkMessage(msg, "")
 			}
 		case ACK_AFTER_NOMATTER:
+			err = h.Hander(msg)
 			s.MarkMessage(msg, "")
 		default:
 			panic("invalid ack type: " + strconv.Itoa(h.Option.Ack))
