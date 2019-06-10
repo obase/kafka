@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/Shopify/sarama v1.22.1
-	github.com/obase/conf v0.3.0
+	github.com/obase/conf v0.4.0
 )
 
 exclude github.com/DataDog/zstd v1.3.8
