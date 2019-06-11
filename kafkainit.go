@@ -14,7 +14,6 @@ var once sync.Once
 
 func Init() {
 	once.Do(func() {
-		conf.Init()
 		configs, ok := conf.GetSlice(PCKEY)
 		if ok && len(configs) > 0 {
 			for i, c := range configs {
