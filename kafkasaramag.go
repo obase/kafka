@@ -74,7 +74,7 @@ func (g *saramaConsumerGroup) Consume(topic string, mh ConsumerMessageHandler, e
 		}
 	}()
 	for {
-		err = g.ConsumerGroup.Consume(context.Background(), []string{topic}, newSaramaConsumerGroupHandler(mh, g.option.Offset))
+		err = g.ConsumerGroup.Consume(context.Background(), []string{topic}, newSaramaConsumerGroupHandler(mh, g.option))
 		if err != nil {
 			return
 		}

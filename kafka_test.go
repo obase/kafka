@@ -29,8 +29,9 @@ func TestGetConsumer(t *testing.T) {
 	Init()
 	c := GetConsumer("demo")
 	defer c.Close()
-	c.Consume("test.topic", func(msg *ConsumerMessage) {
+	c.Consume("test.topic", func(msg *ConsumerMessage) error {
 		fmt.Printf("receive off=%v, key=%v, val=%v\n", msg.Offset, string(msg.Key), string(msg.Value))
+		return nil
 	}, func(err error) {
 		fmt.Printf("error: %v\n", err)
 	})
