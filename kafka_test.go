@@ -9,7 +9,6 @@ import (
 )
 
 func TestGetProducer(t *testing.T) {
-	Init()
 	p := GetProducer("demo")
 	defer p.Close()
 	for i := 0; i < 10000; i++ {
@@ -26,7 +25,6 @@ func TestGetProducer(t *testing.T) {
 }
 
 func TestGetConsumer(t *testing.T) {
-	Init()
 	c := GetConsumer("demo")
 	defer c.Close()
 	c.Consume("test.topic", func(msg *ConsumerMessage) error {
