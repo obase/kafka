@@ -49,6 +49,7 @@ type Consumer interface {
 	Close() error
 	// blocking to consume the messages
 	Consume(topics string, mh ConsumerMessageHandler, eh ConsumerErrorHandler) error
+	ConsumeM(topics []string, mh ConsumerMessageHandler, eh ConsumerErrorHandler) error
 }
 
 func producerConfig(opt *ProducerOption) (config *sarama.Config) {

@@ -62,6 +62,11 @@ func (g *saramaConsumerGroup) Close() error {
 
 // blocking to consume the messages
 func (g *saramaConsumerGroup) Consume(topic string, mh ConsumerMessageHandler, eh ConsumerErrorHandler) (err error) {
+	return g.ConsumeM([]string{topic}, mh, eh)
+}
+
+// blocking to consume the messages
+func (g *saramaConsumerGroup) ConsumeM(topics []string, mh ConsumerMessageHandler, eh ConsumerErrorHandler) (err error) {
 	ver := atomic.AddInt32(&g.version, 1)
 	go func() {
 		tk := time.Tick(time.Second)
@@ -74,7 +79,7 @@ func (g *saramaConsumerGroup) Consume(topic string, mh ConsumerMessageHandler, e
 		}
 	}()
 	for {
-		err = g.ConsumerGroup.Consume(context.Background(), []string{topic}, newSaramaConsumerGroupHandler(mh, g.option))
+		err = g.ConsumerGroup.Consume(context.Background(), topics, newSaramaConsumerGroupHandler(mh, g.option))
 		if err != nil {
 			return
 		}
