@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"github.com/Shopify/sarama"
+	"strings"
 )
 
 const (
@@ -87,7 +88,12 @@ func SetupProducer(opt *ProducerOption) (err error) {
 	if err != nil {
 		return
 	}
-	producers[opt.Key] = p
+	for _, k := range strings.Split(opt.Key, ",") {
+		if k = strings.TrimSpace(k); len(k) > 0 {
+			producers[k] = p
+		}
+	}
+
 	return
 }
 
