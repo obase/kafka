@@ -103,7 +103,12 @@ func SetupConsumer(opt *ConsumerOption) (err error) {
 	if err != nil {
 		return
 	}
-	consumers[opt.Key] = c
+
+	for _, k := range strings.Split(opt.Key, ",") {
+		if k = strings.TrimSpace(k); len(k) > 0 {
+			consumers[ k] = c
+		}
+	}
 	return
 }
 
