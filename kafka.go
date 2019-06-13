@@ -71,11 +71,17 @@ var producers map[string]Producer = make(map[string]Producer)
 var consumers map[string]Consumer = make(map[string]Consumer)
 
 func GetProducer(key string) Producer {
-	return producers[key]
+	if rt, ok := producers[key]; ok {
+		return rt
+	}
+	return nil
 }
 
 func GetConsumer(key string) Consumer {
-	return consumers[key]
+	if rt, ok := consumers[key]; ok {
+		return rt
+	}
+	return nil
 }
 
 func SetupProducer(opt *ProducerOption) (err error) {
@@ -106,7 +112,7 @@ func SetupConsumer(opt *ConsumerOption) (err error) {
 
 	for _, k := range strings.Split(opt.Key, ",") {
 		if k = strings.TrimSpace(k); len(k) > 0 {
-			consumers[ k] = c
+			consumers[k] = c
 		}
 	}
 	return
