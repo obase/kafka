@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	"errors"
 	"github.com/Shopify/sarama"
 	"strings"
 )
@@ -85,6 +86,14 @@ func GetConsumer(key string) Consumer {
 }
 
 func SetupProducer(opt *ProducerConfig) (err error) {
+
+	keys := strings.Split(opt.Key, ",")
+	for _, k := range keys {
+		if _, ok := producers[k]; ok {
+			err = errors.New("duplicate kafka producer key " + k)
+			return
+		}
+	}
 	var p Producer
 	if opt.Async {
 		p, err = newSaramaAsyncProducer(opt)
@@ -94,26 +103,30 @@ func SetupProducer(opt *ProducerConfig) (err error) {
 	if err != nil {
 		return
 	}
-	for _, k := range strings.Split(opt.Key, ",") {
-		if k = strings.TrimSpace(k); len(k) > 0 {
-			producers[k] = p
-		}
+	for _, k := range keys {
+		producers[k] = p
 	}
 
 	return
 }
 
 func SetupConsumer(opt *ConsumerConfig) (err error) {
+
+	keys := strings.Split(opt.Key, ",")
+	for _, k := range keys {
+		if _, ok := consumers[k]; ok {
+			err = errors.New("duplicate kafka consumer key " + k)
+			return
+		}
+	}
 	var c Consumer
 	c, err = newSaramaConsumerGroup(opt)
 	if err != nil {
 		return
 	}
 
-	for _, k := range strings.Split(opt.Key, ",") {
-		if k = strings.TrimSpace(k); len(k) > 0 {
-			consumers[k] = c
-		}
+	for _, k := range keys {
+		consumers[k] = c
 	}
 	return
 }
