@@ -23,7 +23,7 @@ func init() {
 			returnSuccess, ok := conf.ElemBool(c, "returnSuccess")
 			returnError, ok := conf.ElemBool(c, "returnError")
 
-			err := SetupProducer(&ProducerOption{
+			err := SetupProducer(&ProducerConfig{
 				Key:           key,
 				Address:       address,
 				Async:         async,
@@ -53,7 +53,7 @@ func init() {
 			offset, ok := conf.ElemInt(c, "offset")
 			ack, ok := conf.ElemInt(c, "ack")
 
-			err := SetupConsumer(&ConsumerOption{
+			err := SetupConsumer(&ConsumerConfig{
 				Key:     key,
 				Address: address,
 				Group:   group,

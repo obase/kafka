@@ -9,11 +9,11 @@ import (
 )
 
 type saramaConsumerGroupHandler struct {
-	Option *ConsumerOption
+	Option *ConsumerConfig
 	Hander ConsumerMessageHandler
 }
 
-func newSaramaConsumerGroupHandler(mhandler ConsumerMessageHandler, option *ConsumerOption) *saramaConsumerGroupHandler {
+func newSaramaConsumerGroupHandler(mhandler ConsumerMessageHandler, option *ConsumerConfig) *saramaConsumerGroupHandler {
 	return &saramaConsumerGroupHandler{
 		Hander: mhandler,
 		Option: option,
@@ -52,7 +52,7 @@ func (h *saramaConsumerGroupHandler) ConsumeClaim(s sarama.ConsumerGroupSession,
 
 type saramaConsumerGroup struct {
 	sarama.ConsumerGroup
-	option  *ConsumerOption
+	option  *ConsumerConfig
 	version int32
 }
 
@@ -87,7 +87,7 @@ func (g *saramaConsumerGroup) ConsumeM(topics []string, mh ConsumerMessageHandle
 	return nil
 }
 
-func newSaramaConsumerGroup(opt *ConsumerOption) (ret *saramaConsumerGroup, err error) {
+func newSaramaConsumerGroup(opt *ConsumerConfig) (ret *saramaConsumerGroup, err error) {
 	grp, err := sarama.NewConsumerGroup(opt.Address, opt.Group, consumerConfig(opt))
 	if err != nil {
 		return

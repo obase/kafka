@@ -11,7 +11,7 @@ sync producer
  ======================================*/
 type saramaSyncProducer struct {
 	sarama.SyncProducer
-	option *ProducerOption
+	option *ProducerConfig
 }
 
 func (p *saramaSyncProducer) Close() error {
@@ -26,7 +26,7 @@ func (p *saramaSyncProducer) AsyncHandle(mh ProducerMessageHandler, eh ProducerE
 
 }
 
-func newSaramaSyncProducer(opt *ProducerOption) (ret *saramaSyncProducer, err error) {
+func newSaramaSyncProducer(opt *ProducerConfig) (ret *saramaSyncProducer, err error) {
 	// must be set true
 	opt.ReturnSuccess = true
 	opt.ReturnError = true
@@ -46,7 +46,7 @@ async producer
  ======================================*/
 type saramaAsyncProducer struct {
 	sarama.AsyncProducer
-	option  *ProducerOption
+	option  *ProducerConfig
 	version int32
 }
 
@@ -90,7 +90,7 @@ func (p *saramaAsyncProducer) AsyncHandle(mh ProducerMessageHandler, eh Producer
 	}
 }
 
-func newSaramaAsyncProducer(opt *ProducerOption) (ret *saramaAsyncProducer, err error) {
+func newSaramaAsyncProducer(opt *ProducerConfig) (ret *saramaAsyncProducer, err error) {
 	p, err := sarama.NewAsyncProducer(opt.Address, producerConfig(opt))
 	if err != nil {
 		return

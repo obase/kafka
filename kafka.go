@@ -16,7 +16,7 @@ type ProducerError = sarama.ProducerError
 type ConsumerMessage = sarama.ConsumerMessage
 type ConsumerError = sarama.ConsumerError
 
-type ProducerOption struct {
+type ProducerConfig struct {
 	Key           string   `json:"key"`
 	Address       []string `json:"address"` // kafka地址
 	Async         bool     `json:"async"`
@@ -24,7 +24,7 @@ type ProducerOption struct {
 	ReturnError   bool     `json:"returnError"`
 }
 
-type ConsumerOption struct {
+type ConsumerConfig struct {
 	Key     string   `json:"key"`
 	Address []string `json:"address"` // kafka地址
 	Group   string   `json:"group"`   // groupId
@@ -53,7 +53,7 @@ type Consumer interface {
 	ConsumeM(topics []string, mh ConsumerMessageHandler, eh ConsumerErrorHandler) error
 }
 
-func producerConfig(opt *ProducerOption) (config *sarama.Config) {
+func producerConfig(opt *ProducerConfig) (config *sarama.Config) {
 	config = sarama.NewConfig()
 	config.Version = sarama.V0_10_2_0 // consumer groups require Version to be >= V0_10_2_0
 	config.Producer.Return.Successes = opt.ReturnSuccess
@@ -61,7 +61,7 @@ func producerConfig(opt *ProducerOption) (config *sarama.Config) {
 	return
 }
 
-func consumerConfig(opt *ConsumerOption) (config *sarama.Config) {
+func consumerConfig(opt *ConsumerConfig) (config *sarama.Config) {
 	config = sarama.NewConfig()
 	config.Version = sarama.V0_10_2_0 // consumer groups require Version to be >= V0_10_2_0
 	return
@@ -84,7 +84,7 @@ func GetConsumer(key string) Consumer {
 	return nil
 }
 
-func SetupProducer(opt *ProducerOption) (err error) {
+func SetupProducer(opt *ProducerConfig) (err error) {
 	var p Producer
 	if opt.Async {
 		p, err = newSaramaAsyncProducer(opt)
@@ -103,7 +103,7 @@ func SetupProducer(opt *ProducerOption) (err error) {
 	return
 }
 
-func SetupConsumer(opt *ConsumerOption) (err error) {
+func SetupConsumer(opt *ConsumerConfig) (err error) {
 	var c Consumer
 	c, err = newSaramaConsumerGroup(opt)
 	if err != nil {
