@@ -3,7 +3,6 @@ module github.com/obase/kafka
 go 1.12
 
 require (
-	github.com/Shopify/sarama v1.23.1
-	github.com/obase/conf v1.6.0
-	gopkg.in/jcmturner/goidentity.v3 v3.0.0 // indirect
+	github.com/Shopify/sarama latest
+	github.com/obase/conf latest
 )
