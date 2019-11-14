@@ -16,6 +16,8 @@ type ProducerMessage = sarama.ProducerMessage
 type ProducerError = sarama.ProducerError
 type ConsumerMessage = sarama.ConsumerMessage
 type ConsumerError = sarama.ConsumerError
+type StringEncoder = sarama.StringEncoder
+type ByteEncoder = sarama.ByteEncoder
 
 type ProducerConfig struct {
 	Key           string   `json:"key"`
