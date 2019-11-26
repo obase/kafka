@@ -33,6 +33,9 @@ type ConsumerConfig struct {
 	Group   string   `json:"group"`   // groupId
 	Offset  int64    `json:"offset"`
 	Ack     int      `json:"ack"` // ack类型
+	//username and password for SASL/PLAIN  or SASL/SCRAM authentication
+	User     string `json:"user"`
+	Password string `json:"password"`
 }
 
 type ProducerMessageHandler func(msg *ProducerMessage)
@@ -67,6 +70,12 @@ func producerConfig(opt *ProducerConfig) (config *sarama.Config) {
 func consumerConfig(opt *ConsumerConfig) (config *sarama.Config) {
 	config = sarama.NewConfig()
 	config.Version = sarama.V0_10_2_0 // consumer groups require Version to be >= V0_10_2_0
+	if opt.User != "" { // only plain
+		config.Net.SASL.Enable = true
+		config.Net.SASL.Mechanism = sarama.SASLTypePlaintext
+		config.Net.SASL.User = opt.User
+		config.Net.SASL.Password = opt.Password
+	}
 	return
 }
 

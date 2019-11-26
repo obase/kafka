@@ -52,13 +52,17 @@ func init() {
 			}
 			offset, ok := conf.ElemInt(c, "offset")
 			ack, ok := conf.ElemInt(c, "ack")
+			user, ok := conf.ElemString(c, "user")
+			password, ok := conf.ElemString(c, "password")
 
 			err := SetupConsumer(&ConsumerConfig{
-				Key:     key,
-				Address: address,
-				Group:   group,
-				Offset:  int64(offset),
-				Ack:     ack,
+				Key:      key,
+				Address:  address,
+				Group:    group,
+				Offset:   int64(offset),
+				Ack:      ack,
+				User:     user,
+				Password: password,
 			})
 			if err != nil {
 				Close()
