@@ -29,6 +29,12 @@ kafkaConsumer:
     group: "demo"
     offset: 0
     ack: 0
+    user: ""
+    password: ""
+    dialTimeout: "30s"
+    readTimeout: "30s"
+    writeTimeout: "30s"
+    keepAlive: "0s"
 ```
 
 # Index
