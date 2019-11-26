@@ -55,14 +55,23 @@ func init() {
 			user, ok := conf.ElemString(c, "user")
 			password, ok := conf.ElemString(c, "password")
 
+			dialTimeout, ok := conf.ElemDuration(c, "dialTimeout")
+			readTimeout, ok := conf.ElemDuration(c, "readTimeout")
+			writeTimeout, ok := conf.ElemDuration(c, "writeTimeout")
+			keepAlive, ok := conf.ElemDuration(c, "keepAlive")
+
 			err := SetupConsumer(&ConsumerConfig{
-				Key:      key,
-				Address:  address,
-				Group:    group,
-				Offset:   int64(offset),
-				Ack:      ack,
-				User:     user,
-				Password: password,
+				Key:          key,
+				Address:      address,
+				Group:        group,
+				Offset:       int64(offset),
+				Ack:          ack,
+				User:         user,
+				Password:     password,
+				DialTimeout:  dialTimeout,
+				ReadTimeout:  readTimeout,
+				WriteTimeout: writeTimeout,
+				KeepAlive:    keepAlive,
 			})
 			if err != nil {
 				Close()

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/Shopify/sarama"
 	"strings"
+	"time"
 )
 
 const (
@@ -34,8 +35,12 @@ type ConsumerConfig struct {
 	Offset  int64    `json:"offset"`
 	Ack     int      `json:"ack"` // ack类型
 	//username and password for SASL/PLAIN  or SASL/SCRAM authentication
-	User     string `json:"user"`
-	Password string `json:"password"`
+	User         string        `json:"user"`
+	Password     string        `json:"password"`
+	DialTimeout  time.Duration `json:"dialTimeout"`  // How long to wait for the initial connection.
+	ReadTimeout  time.Duration `json:"readTimeout"`  // How long to wait for a response.
+	WriteTimeout time.Duration `json:"writeTimeout"` // How long to wait for a transmit.
+	KeepAlive    time.Duration `json:"keepAlive"`
 }
 
 type ProducerMessageHandler func(msg *ProducerMessage)
@@ -76,6 +81,11 @@ func consumerConfig(opt *ConsumerConfig) (config *sarama.Config) {
 		config.Net.SASL.User = opt.User
 		config.Net.SASL.Password = opt.Password
 	}
+	config.Net.KeepAlive = opt.KeepAlive
+	config.Net.DialTimeout = opt.DialTimeout
+	config.Net.ReadTimeout = opt.ReadTimeout
+	config.Net.WriteTimeout = opt.WriteTimeout
+
 	return
 }
 
