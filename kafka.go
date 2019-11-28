@@ -75,16 +75,24 @@ func producerConfig(opt *ProducerConfig) (config *sarama.Config) {
 func consumerConfig(opt *ConsumerConfig) (config *sarama.Config) {
 	config = sarama.NewConfig()
 	config.Version = sarama.V0_10_2_0 // consumer groups require Version to be >= V0_10_2_0
-	if opt.User != "" { // only plain
+	if opt.User != "" {               // only plain
 		config.Net.SASL.Enable = true
 		config.Net.SASL.Mechanism = sarama.SASLTypePlaintext
 		config.Net.SASL.User = opt.User
 		config.Net.SASL.Password = opt.Password
 	}
-	config.Net.KeepAlive = opt.KeepAlive
-	config.Net.DialTimeout = opt.DialTimeout
-	config.Net.ReadTimeout = opt.ReadTimeout
-	config.Net.WriteTimeout = opt.WriteTimeout
+	if opt.KeepAlive > 0 {
+		config.Net.KeepAlive = opt.KeepAlive
+	}
+	if opt.DialTimeout > 0 {
+		config.Net.DialTimeout = opt.DialTimeout
+	}
+	if opt.ReadTimeout > 0 {
+		config.Net.ReadTimeout = opt.ReadTimeout
+	}
+	if opt.WriteTimeout > 0 {
+		config.Net.WriteTimeout = opt.WriteTimeout
+	}
 
 	return
 }
