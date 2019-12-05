@@ -93,6 +93,9 @@ func consumerConfig(opt *ConsumerConfig) (config *sarama.Config) {
 	if opt.WriteTimeout > 0 {
 		config.Net.WriteTimeout = opt.WriteTimeout
 	}
+	if opt.Offset < 0 { // only -1(OffsetNewest), -2(OffsetOldest)
+		config.Consumer.Offsets.Initial = opt.Offset
+	}
 
 	return
 }

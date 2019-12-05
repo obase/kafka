@@ -20,7 +20,7 @@ func newSaramaConsumerGroupHandler(mhandler ConsumerMessageHandler, option *Cons
 	}
 }
 func (h *saramaConsumerGroupHandler) Setup(s sarama.ConsumerGroupSession) error {
-	if h.Option.Offset != 0 {
+	if h.Option.Offset > 0 { // only positive number, otherwise Error: Executing consumer group command failed due to java.lang.IllegalArgumentException: Invalid negative offset
 		for t, ps := range s.Claims() {
 			for _, p := range ps {
 				s.ResetOffset(t, p, h.Option.Offset, "")
