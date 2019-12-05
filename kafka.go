@@ -99,7 +99,7 @@ func consumerConfig(opt *ConsumerConfig) (config *sarama.Config) {
 		} else if opt.Offset == sarama.OffsetOldest {
 			config.Consumer.Offsets.Initial = sarama.OffsetOldest
 		} else {
-			opt.Offset = 0
+			panic("invalid initial offset")
 		}
 	}
 
