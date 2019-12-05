@@ -21,7 +21,7 @@ func newSaramaConsumerGroupHandler(mhandler ConsumerMessageHandler, option *Cons
 }
 func (h *saramaConsumerGroupHandler) Setup(s sarama.ConsumerGroupSession) error {
 	// FIXBUG: sarama 不支持latest, ResetOffset(-1)会导致server端出现"Invalid negative offset"
-	if h.Option.Offset == 0 || h.Option.Offset != sarama.OffsetNewest {
+	if h.Option.Offset == 0 || h.Option.Offset == sarama.OffsetNewest {
 		return nil
 	}
 	for t, ps := range s.Claims() {
