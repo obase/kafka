@@ -26,6 +26,9 @@ type ProducerConfig struct {
 	Async         bool     `json:"async"`
 	ReturnSuccess bool     `json:"returnSuccess"`
 	ReturnError   bool     `json:"returnError"`
+	//username and password for SASL/PLAIN  or SASL/SCRAM authentication
+	User     string `json:"user"`
+	Password string `json:"password"`
 }
 
 type ConsumerConfig struct {
@@ -66,7 +69,13 @@ type Consumer interface {
 
 func producerConfig(opt *ProducerConfig) (config *sarama.Config) {
 	config = sarama.NewConfig()
-	config.Version = sarama.V0_10_2_0 // consumer groups require Version to be >= V0_10_2_0
+	config.Version = sarama.V2_0_0_0 // consumer groups require Version to be >= V0_10_2_0
+	if opt.User != "" {              // only plain
+		config.Net.SASL.Enable = true
+		config.Net.SASL.Mechanism = sarama.SASLTypePlaintext
+		config.Net.SASL.User = opt.User
+		config.Net.SASL.Password = opt.Password
+	}
 	config.Producer.Return.Successes = opt.ReturnSuccess
 	config.Producer.Return.Errors = opt.ReturnError
 	return
@@ -74,8 +83,8 @@ func producerConfig(opt *ProducerConfig) (config *sarama.Config) {
 
 func consumerConfig(opt *ConsumerConfig) (config *sarama.Config) {
 	config = sarama.NewConfig()
-	config.Version = sarama.V0_10_2_0 // consumer groups require Version to be >= V0_10_2_0
-	if opt.User != "" {               // only plain
+	config.Version = sarama.V2_0_0_0 // consumer groups require Version to be >= V0_10_2_0
+	if opt.User != "" {              // only plain
 		config.Net.SASL.Enable = true
 		config.Net.SASL.Mechanism = sarama.SASLTypePlaintext
 		config.Net.SASL.User = opt.User
