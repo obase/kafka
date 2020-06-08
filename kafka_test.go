@@ -3,7 +3,6 @@ package kafka
 import (
 	"fmt"
 	"github.com/Shopify/sarama"
-	"os"
 	"strconv"
 	"testing"
 	"time"
@@ -30,7 +29,7 @@ func TestGetConsumer(t *testing.T) {
 	defer c.Close()
 	c.Consume("test.topic", func(msg *ConsumerMessage) error {
 		fmt.Printf("receive off=%v, key=%v, val=%v\n", msg.Offset, string(msg.Key), string(msg.Value))
-		os.Exit(1)
+		//os.Exit(1)
 		return nil
 	}, func(err error) {
 		fmt.Printf("error: %v\n", err)
