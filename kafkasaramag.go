@@ -36,21 +36,48 @@ func (h *saramaConsumerGroupHandler) ConsumeClaim(s sarama.ConsumerGroupSession,
 		case <-h.Context.Done():
 			return
 		case msg := <-c.Messages():
+			// Consume joins a cluster of consumers for a given list of topics and
+			// starts a blocking ConsumerGroupSession through the ConsumerGroupHandler.
+			//
+			// The life-cycle of a session is represented by the following steps:
+			//
+			// 1. The consumers join the group (as explained in https://kafka.apache.org/documentation/#intro_consumers)
+			//    and is assigned their "fair share" of partitions, aka 'claims'.
+			// 2. Before processing starts, the handler's Setup() hook is called to notify the user
+			//    of the claims and allow any necessary preparation or alteration of state.
+			// 3. For each of the assigned claims the handler's ConsumeClaim() function is then called
+			//    in a separate goroutine which requires it to be thread-safe. Any state must be carefully protected
+			//    from concurrent reads/writes.
+			// 4. The session will persist until one of the ConsumeClaim() functions exits. This can be either when the
+			//    parent context is cancelled or when a server-side rebalance cycle is initiated.
+			// 5. Once all the ConsumeClaim() loops have exited, the handler's Cleanup() hook is called
+			//    to allow the user to perform any final tasks before a rebalance.
+			// 6. Finally, marked offsets are committed one last time before claims are released.
+			//
+			// Please note, that once a rebalance is triggered, sessions must be completed within
+			// Config.Consumer.Group.Rebalance.Timeout. This means that ConsumeClaim() functions must exit
+			// as quickly as possible to allow time for Cleanup() and the final offset commit. If the timeout
+			// is exceeded, the consumer will be removed from the group by Kafka, which will cause offset
+			// commit failures.
+			// This method should be called inside an infinite loop, when a
+			// server-side rebalance happens, the consumer session will need to be
+			// recreated to get the new claims.
 			if msg != nil {
-				switch h.ConsumerConfig.Ack {
-				case ACK_BEFORE_AUTO:
+				return
+			}
+			switch h.ConsumerConfig.Ack {
+			case ACK_BEFORE_AUTO:
+				s.MarkMessage(msg, "")
+				err = h.ConsumerMessageHandler(msg)
+			case ACK_AFTER_NOERROR:
+				if err = h.ConsumerMessageHandler(msg); err == nil {
 					s.MarkMessage(msg, "")
-					err = h.ConsumerMessageHandler(msg)
-				case ACK_AFTER_NOERROR:
-					if err = h.ConsumerMessageHandler(msg); err == nil {
-						s.MarkMessage(msg, "")
-					}
-				case ACK_AFTER_NOMATTER:
-					err = h.ConsumerMessageHandler(msg)
-					s.MarkMessage(msg, "")
-				default:
-					panic("invalid ack type: " + strconv.Itoa(h.ConsumerConfig.Ack))
 				}
+			case ACK_AFTER_NOMATTER:
+				err = h.ConsumerMessageHandler(msg)
+				s.MarkMessage(msg, "")
+			default:
+				panic("invalid ack type: " + strconv.Itoa(h.ConsumerConfig.Ack))
 			}
 		}
 	}
