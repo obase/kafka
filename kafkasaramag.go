@@ -13,7 +13,6 @@ type saramaConsumerGroupHandler struct {
 }
 
 func (h *saramaConsumerGroupHandler) Setup(s sarama.ConsumerGroupSession) error {
-	// FIXBUG: sarama 不支持latest, ResetOffset(-1)会导致server端出现"Error: Executing consumer group command failed due to java.lang.IllegalArgumentException: Invalid negative offset"
 	if h.ConsumerConfig.Offset != 0 {
 		// 如果是OffsetOldest则不变, 否则自动前移, 因为位置从0开始.
 		var realOffset int64 = h.ConsumerConfig.Offset
