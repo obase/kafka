@@ -27,6 +27,13 @@ func TestGetProducer(t *testing.T) {
 func TestGetConsumer(t *testing.T) {
 	c := GetConsumer("demo")
 	defer c.Close()
+
+	// 过15秒后自动关闭退出
+	go func() {
+		time.Sleep(15 * time.Second)
+		c.Close()
+	}()
+
 	c.Consume("test.topic", func(msg *ConsumerMessage) error {
 		fmt.Printf("receive off=%v, key=%v, val=%v\n", msg.Offset, string(msg.Key), string(msg.Value))
 		//os.Exit(1)
