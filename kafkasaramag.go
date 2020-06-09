@@ -35,7 +35,7 @@ func (h *saramaConsumerGroupHandler) ConsumeClaim(s sarama.ConsumerGroupSession,
 		select {
 		case <-h.Context.Done():
 			return
-		case msg := <-c.Messages():
+		case msg, ok := <-c.Messages():
 			// Consume joins a cluster of consumers for a given list of topics and
 			// starts a blocking ConsumerGroupSession through the ConsumerGroupHandler.
 			//
@@ -62,7 +62,7 @@ func (h *saramaConsumerGroupHandler) ConsumeClaim(s sarama.ConsumerGroupSession,
 			// This method should be called inside an infinite loop, when a
 			// server-side rebalance happens, the consumer session will need to be
 			// recreated to get the new claims.
-			if msg != nil {
+			if !ok {
 				return
 			}
 			switch h.ConsumerConfig.Ack {
