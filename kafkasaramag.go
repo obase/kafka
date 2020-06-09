@@ -61,6 +61,18 @@ type saramaConsumerGroup struct {
 	context.CancelFunc
 }
 
+func newSaramaConsumerGroup(c *ConsumerConfig) (ret *saramaConsumerGroup, err error) {
+	grp, err := sarama.NewConsumerGroup(c.Address, c.Group, consumerConfig(c))
+	if err != nil {
+		return
+	}
+	ret = &saramaConsumerGroup{
+		ConsumerConfig: c,
+		ConsumerGroup:  grp,
+	}
+	return
+}
+
 func (g *saramaConsumerGroup) Close() (err error) {
 	if g.CancelFunc != nil {
 		g.CancelFunc()
@@ -79,14 +91,12 @@ func (g *saramaConsumerGroup) Consume(topic string, mh ConsumerMessageHandler, e
 // 必须保证ConsumerMessageHandler, ConsumerErrorHandler没有panic
 func (g *saramaConsumerGroup) ConsumeM(topics []string, mh ConsumerMessageHandler, eh ConsumerErrorHandler) (err error) {
 	// 先关闭旧的消费过程
-	g.Close()
+	if g.CancelFunc != nil {
+		g.CancelFunc()
+	}
 
 	// 每次进入都会新起context. 因为ConsumeM()不能重复调用,否则会停掉之前的工作
 	var ctx context.Context
-	g.ConsumerGroup, err = sarama.NewConsumerGroup(g.ConsumerConfig.Address, g.ConsumerConfig.Group, consumerConfig(g.ConsumerConfig))
-	if err != nil {
-		return
-	}
 	ctx, g.CancelFunc = context.WithCancel(context.Background())
 	go func(ctx context.Context) {
 		for {

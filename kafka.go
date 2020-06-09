@@ -167,8 +167,9 @@ func SetupConsumer(opt *ConsumerConfig) (err error) {
 		}
 	}
 
-	c := &saramaConsumerGroup{
-		ConsumerConfig: opt,
+	c, err := newSaramaConsumerGroup(opt)
+	if err != nil {
+		return
 	}
 	for _, k := range keys {
 		consumers[k] = c
