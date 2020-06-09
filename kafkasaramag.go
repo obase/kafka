@@ -36,19 +36,21 @@ func (h *saramaConsumerGroupHandler) ConsumeClaim(s sarama.ConsumerGroupSession,
 		case <-h.Context.Done():
 			return
 		case msg := <-c.Messages():
-			switch h.ConsumerConfig.Ack {
-			case ACK_BEFORE_AUTO:
-				s.MarkMessage(msg, "")
-				err = h.ConsumerMessageHandler(msg)
-			case ACK_AFTER_NOERROR:
-				if err = h.ConsumerMessageHandler(msg); err == nil {
+			if msg != nil {
+				switch h.ConsumerConfig.Ack {
+				case ACK_BEFORE_AUTO:
 					s.MarkMessage(msg, "")
+					err = h.ConsumerMessageHandler(msg)
+				case ACK_AFTER_NOERROR:
+					if err = h.ConsumerMessageHandler(msg); err == nil {
+						s.MarkMessage(msg, "")
+					}
+				case ACK_AFTER_NOMATTER:
+					err = h.ConsumerMessageHandler(msg)
+					s.MarkMessage(msg, "")
+				default:
+					panic("invalid ack type: " + strconv.Itoa(h.ConsumerConfig.Ack))
 				}
-			case ACK_AFTER_NOMATTER:
-				err = h.ConsumerMessageHandler(msg)
-				s.MarkMessage(msg, "")
-			default:
-				panic("invalid ack type: " + strconv.Itoa(h.ConsumerConfig.Ack))
 			}
 		}
 	}
