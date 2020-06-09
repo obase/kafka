@@ -17,8 +17,11 @@ func (h *saramaConsumerGroupHandler) Setup(s sarama.ConsumerGroupSession) error 
 	if h.ConsumerConfig.Offset > 0 || h.ConsumerConfig.Offset == sarama.OffsetOldest {
 		// 如果是OffsetOldest则不变, 否则自动前移, 因为位置从0开始.
 		var realOffset int64 = h.ConsumerConfig.Offset
+		// 修正CURRENT-OFFSET
 		if realOffset > 0 {
 			realOffset--
+		} else if realOffset < 0 {
+			realOffset = 0
 		}
 		for t, ps := range s.Claims() {
 			for _, p := range ps {
