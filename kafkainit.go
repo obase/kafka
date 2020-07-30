@@ -2,8 +2,10 @@ package kafka
 
 import (
 	"fmt"
+	"github.com/Shopify/sarama"
 	"github.com/obase/conf"
 	"strconv"
+	"strings"
 )
 
 const PCKEY = "kafkaProducer"
@@ -22,6 +24,7 @@ func init() {
 			async, ok := conf.ElemBool(c, "async")
 			returnSuccess, ok := conf.ElemBool(c, "returnSuccess")
 			returnError, ok := conf.ElemBool(c, "returnError")
+			version, ok := conf.ElemString(c, "version")
 
 			err := SetupProducer(&ProducerConfig{
 				Key:           key,
@@ -29,6 +32,7 @@ func init() {
 				Async:         async,
 				ReturnSuccess: returnSuccess,
 				ReturnError:   returnError,
+				Version:       getKafkaVersion(version),
 			})
 			if err != nil {
 				Close()
@@ -59,6 +63,7 @@ func init() {
 			readTimeout, ok := conf.ElemDuration(c, "readTimeout")
 			writeTimeout, ok := conf.ElemDuration(c, "writeTimeout")
 			keepAlive, ok := conf.ElemDuration(c, "keepAlive")
+			version, ok := conf.ElemString(c, "version")
 
 			err := SetupConsumer(&ConsumerConfig{
 				Key:          key,
@@ -72,6 +77,7 @@ func init() {
 				ReadTimeout:  readTimeout,
 				WriteTimeout: writeTimeout,
 				KeepAlive:    keepAlive,
+				Version:      getKafkaVersion(version),
 			})
 			if err != nil {
 				Close()
@@ -79,4 +85,60 @@ func init() {
 			}
 		}
 	}
+}
+
+func getKafkaVersion(version string) *sarama.KafkaVersion {
+	switch strings.ToUpper(version) {
+	case "":
+		return nil
+	case "V0_8_2_0":
+		return &sarama.V0_8_2_0
+	case "V0_8_2_1":
+		return &sarama.V0_8_2_1
+	case "V0_8_2_2":
+		return &sarama.V0_8_2_2
+	case "V0_9_0_0":
+		return &sarama.V0_9_0_0
+	case "V0_9_0_1":
+		return &sarama.V0_9_0_1
+	case "V0_10_0_0":
+		return &sarama.V0_10_0_0
+	case "V0_10_0_1":
+		return &sarama.V0_10_0_1
+	case "V0_10_1_0":
+		return &sarama.V0_10_1_0
+	case "V0_10_1_1":
+		return &sarama.V0_10_1_1
+	case "V0_10_2_0":
+		return &sarama.V0_10_2_0
+	case "V0_10_2_1":
+		return &sarama.V0_10_2_1
+	case "V0_11_0_0":
+		return &sarama.V0_11_0_0
+	case "V0_11_0_1":
+		return &sarama.V0_11_0_1
+	case "V0_11_0_2":
+		return &sarama.V0_11_0_2
+	case "V1_0_0_0":
+		return &sarama.V1_0_0_0
+	case "V1_1_0_0":
+		return &sarama.V1_1_0_0
+	case "V1_1_1_0":
+		return &sarama.V1_1_1_0
+	case "V2_0_0_0":
+		return &sarama.V2_0_0_0
+	case "V2_0_1_0":
+		return &sarama.V2_0_1_0
+	case "V2_1_0_0":
+		return &sarama.V2_1_0_0
+	case "V2_2_0_0":
+		return &sarama.V2_2_0_0
+	case "V2_3_0_0":
+		return &sarama.V2_3_0_0
+	case "V2_4_0_0":
+		return &sarama.V2_4_0_0
+	case "V2_5_0_0":
+		return &sarama.V2_5_0_0
+	}
+	return nil
 }

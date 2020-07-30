@@ -27,8 +27,9 @@ type ProducerConfig struct {
 	ReturnSuccess bool     `json:"returnSuccess"`
 	ReturnError   bool     `json:"returnError"`
 	//username and password for SASL/PLAIN  or SASL/SCRAM authentication
-	User     string `json:"user"`
-	Password string `json:"password"`
+	User     string               `json:"user"`
+	Password string               `json:"password"`
+	Version  *sarama.KafkaVersion `json:"version"` // kafka version
 }
 
 type ConsumerConfig struct {
@@ -38,12 +39,13 @@ type ConsumerConfig struct {
 	Offset  int64    `json:"offset"`
 	Ack     int      `json:"ack"` // ack类型
 	//username and password for SASL/PLAIN  or SASL/SCRAM authentication
-	User         string        `json:"user"`
-	Password     string        `json:"password"`
-	DialTimeout  time.Duration `json:"dialTimeout"`  // How long to wait for the initial connection.
-	ReadTimeout  time.Duration `json:"readTimeout"`  // How long to wait for a response.
-	WriteTimeout time.Duration `json:"writeTimeout"` // How long to wait for a transmit.
-	KeepAlive    time.Duration `json:"keepAlive"`
+	User         string               `json:"user"`
+	Password     string               `json:"password"`
+	DialTimeout  time.Duration        `json:"dialTimeout"`  // How long to wait for the initial connection.
+	ReadTimeout  time.Duration        `json:"readTimeout"`  // How long to wait for a response.
+	WriteTimeout time.Duration        `json:"writeTimeout"` // How long to wait for a transmit.
+	KeepAlive    time.Duration        `json:"keepAlive"`
+	Version      *sarama.KafkaVersion `json:"version"` // kafka version
 }
 
 type ProducerMessageHandler func(msg *ProducerMessage)
@@ -69,8 +71,12 @@ type Consumer interface {
 
 func producerConfig(opt *ProducerConfig) (config *sarama.Config) {
 	config = sarama.NewConfig()
-	config.Version = sarama.V2_0_0_0 // consumer groups require Version to be >= V0_10_2_0
-	if opt.User != "" {              // only plain
+	if opt.Version != nil {
+		config.Version = *opt.Version
+	} else {
+		config.Version = sarama.V2_0_0_0 // consumer groups require Version to be >= V0_10_2_0
+	}
+	if opt.User != "" { // only plain
 		config.Net.SASL.Enable = true
 		config.Net.SASL.Mechanism = sarama.SASLTypePlaintext
 		config.Net.SASL.User = opt.User
@@ -83,8 +89,12 @@ func producerConfig(opt *ProducerConfig) (config *sarama.Config) {
 
 func consumerConfig(opt *ConsumerConfig) (config *sarama.Config) {
 	config = sarama.NewConfig()
-	config.Version = sarama.V2_0_0_0 // consumer groups require Version to be >= V0_10_2_0
-	if opt.User != "" {              // only plain
+	if opt.Version != nil {
+		config.Version = *opt.Version
+	} else {
+		config.Version = sarama.V2_0_0_0 // consumer groups require Version to be >= V0_10_2_0
+	}
+	if opt.User != "" { // only plain
 		config.Net.SASL.Enable = true
 		config.Net.SASL.Mechanism = sarama.SASLTypePlaintext
 		config.Net.SASL.User = opt.User
